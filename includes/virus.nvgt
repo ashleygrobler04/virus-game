@@ -1,0 +1,28 @@
+#include "globals.nvgt"
+
+class virus {
+    int x,y,fall_time;
+    int snd,brake_snd;
+    timer fall_timer;
+    virus(int position,int height) {
+        x=position;
+        y=height;
+        fall_time=random(200,700);
+        snd=p.play_2d("sounds/virus.wav",0,0,x,y,true,false);
+    }
+
+    void loop() {
+        if (y>=0 and fall_timer.elapsed>=fall_time) {
+            fall_timer.restart();
+            y--;
+            p.update_sound_2d(snd,x,y);
+            //p.update_sound_start_values(snd,0,0,y*y);
+        }
+    }
+}
+
+virus@[] v; //Keep track of the virusses
+
+void spawn_virus() {
+    v.insert_last(virus(random(0,15),random(5,20)));
+}

@@ -1,0 +1,54 @@
+#include "globals.nvgt"
+#include "virus.nvgt"
+
+class bullet {
+    int x,y,speed;
+    timer movetimer;
+    bullet(int bullet_x, int bullet_y) {
+        x=bullet_x;
+        y=bullet_y;
+        speed=50;
+    }
+
+    void update() {
+        if (movetimer.elapsed>=speed and y<30) {
+            y++;
+            movetimer.restart();
+        }
+    }
+}
+
+bullet@[] bullets;
+void spawn_bullet(int pos1, int pos2) {
+    bullets.insert_last(bullet(pos1,pos2));
+}
+
+void bullet_loop() {
+    array<int> bulletsToRemove;
+    array<int> enemiesToRemove;
+
+    for (int i = 0; i < bullets.length(); i++) {
+        bullets[i].update();
+        if (bullets[i].y >= 30) {
+            bulletsToRemove.insert_last(i);
+        }
+        for (int j = 0; j < v.length(); j++) {
+            if (bullets[i].x == v[j].x && bullets[i].y == v[j].y) {
+                p.play_2d("sounds/bullet_fall.wav", x,y, v[j].x,v[j].y,false);
+                p.destroy_sound(v[j].snd);
+                enemiesToRemove.insert_last(j);
+                bulletsToRemove.insert_last(i);
+                score+=1;
+                targets_hit+=1;
+                break;
+            }
+        }
+    }
+
+    for (int i = bulletsToRemove.length() - 1; i >= 0; i--) {
+        bullets.remove_at(bulletsToRemove[i]);
+    }
+    for (int i = enemiesToRemove.length() - 1; i >= 0; i--) {
+        v.remove_at(enemiesToRemove[i]);
+    }
+}

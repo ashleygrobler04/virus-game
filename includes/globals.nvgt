@@ -1,0 +1,18 @@
+#include "sound_pool.nvgt"
+#include "speech.nvgt"
+sound_pool p;
+int x=0;
+int y=0;
+int score=0;
+int lives=3;
+int fired_shots=0;
+int targets_hit=0;
+
+//Just for now, add this function, can be moved at A later stage
+int calculate_accuracy(int shots, int hits) {
+    //Calculate the player's fire accuracy in percentage
+    if (shots==0 ||hits==0) {
+        return 0;
+    }
+    return (float(hits)/shots)*100;
+}
