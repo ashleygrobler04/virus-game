@@ -1,58 +1,80 @@
+#include "includes/state.nvgt"
 #include "includes/bullet.nvgt"
 #include "includes/virus.nvgt"
 #include "includes/globals.nvgt"
 #include "dynamic_menu.nvgt"
 
-dynamic_menu m;
-
-void reset_game() {
-    p.destroy_all();
-    v.resize(0);
-    bullets.resize(0); //just incase there are some bullets left
-    lives=3;
-    x=0;
-    score=0;
-    fired_shots=0;
-    targets_hit=0;
-    init_menu();
-}
-
-void init_menu() {
-    m.reset(true); //We want the menu to reset each time this function is called else you'd have more than 1 item that will be duplicated.
-    m.add_item_tts("Start");
-    m.add_item_tts("Exit");
-    m.wrap=false;
-    m.enable_home_and_end=true;
-    m.set_speech_mode(3);
-    int r=m.run("Please choose an option", true);
-    if (r==2 || r==0) {
-        exit();
-    }
-    if (r==1) {
-        game();
-    }
-}
+menu_state menu;
+game_state game;
+state_manager sm;
 
 void main() {
     show_window("Virus game");
-    init_menu();
     p.pan_step=3.0;
-}
-
-void game() {
-    sound ambience;
-    ambience.load("sounds/ambience.wav");
-    ambience.play_looped();
-    timer spawn_timer;
-    timer walktimer;
-    int walktime=150;
-    int spawn_time=random(3000,10000);
+    sm.push(menu);
     while (true) {
         wait(5);
+        sm.update();
+    }
+}
+
+
+class menu_state:state {
+    dynamic_menu m;
+    
+    void init_menu() {
+        m.reset(true); //We want the menu to reset each time this function is called else you'd have more than 1 item that will be duplicated.
+        m.add_item_tts("Start");
+        m.add_item_tts("Exit");
+        m.wrap=false;
+        m.enable_home_and_end=true;
+        m.set_speech_mode(3);
+    }
+
+    void on_push() {
+        init_menu();
+    }
+
+    void on_update() {
+        int r=m.run("Please choose an option", true);
+        if (r==2 || r==0) {
+            exit();
+        }
+        if (r==1) {
+            sm.push(game);
+        }
+    }
+
+    void on_pop() {
+        speak("game");
+    }
+}
+
+class game_state:state {
+    sound ambience;
+    timer spawn_timer;
+    timer walktimer;
+    int walktime;
+    int spawn_time;
+
+
+    void on_push() {
+        speak("Welcome");
+        ambience.load("sounds/ambience.wav");
+        ambience.play_looped();
+        walktime=150;
+        spawn_time=random(3000,10000);
+    }
+
+    void on_pop() {
+        ambience.stop();
+        reset_game();
+    }
+
+    void on_update() {
         p.update_listener_2d(x,0);
         if (key_pressed(KEY_ESCAPE)) {
-            ambience.stop();
-            reset_game();
+            sm.pop();
         }
         if (spawn_timer.elapsed>=spawn_time) {
             spawn_virus();
@@ -95,11 +117,21 @@ void game() {
         }
         if (lives==0) {
             alert("Game over", "You managed to get A score of "+score);
-            ambience.stop();
-            reset_game();
+            sm.pop();
         }
         if (key_pressed(KEY_A)) {
             speak("Accuracy: "+calculate_accuracy(fired_shots,targets_hit)+" percent");
         }
+    }
+
+    void reset_game() {
+        p.destroy_all();
+        v.resize(0);
+        bullets.resize(0); //just incase there are some bullets left
+        lives=3;
+        x=0;
+        score=0;
+        fired_shots=0;
+        targets_hit=0;
     }
 }
