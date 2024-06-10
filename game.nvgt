@@ -1,4 +1,5 @@
-#include "includes/state.nvgt"
+
+#include "form.nvgt"#include "includes/state.nvgt"
 #include "includes/bullet.nvgt"
 #include "includes/virus.nvgt"
 #include "includes/globals.nvgt"
@@ -6,13 +7,16 @@
 
 menu_state menu;
 game_state game;
+game_over_state go;
 state_manager sm;
+audio_form f;
 
 void main() {
     show_window("Virus game");
     //p.pan_step=3.0;
     sound_global_hrtf=true;
     sm.push(menu);
+    sm.push(go);
     while (true) {
         wait(5);
         sm.update();
@@ -132,5 +136,26 @@ class game_state:state {
         score=0;
         fired_shots=0;
         targets_hit=0;
+    }
+}
+
+class game_over_state:state {
+    void on_push() {
+        f.create_window();
+        int list=f.create_list("Results", 2,false,true);
+        f.add_list_item(0,"Score: 0");
+        f.add_list_item(0,"accuracy: 100%");
+        int ok=f.create_button("OK");
+    }
+
+    void on_pop() {
+        f.reset();
+    }
+
+    void on_update() {
+        f.monitor();
+        if (key_pressed(KEY_ESCAPE)) {
+            sm.pop();
+        }
     }
 }
