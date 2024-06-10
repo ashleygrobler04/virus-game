@@ -10,7 +10,8 @@ state_manager sm;
 
 void main() {
     show_window("Virus game");
-    p.pan_step=3.0;
+    //p.pan_step=3.0;
+    sound_global_hrtf=true;
     sm.push(menu);
     while (true) {
         wait(5);
