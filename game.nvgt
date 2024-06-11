@@ -16,7 +16,7 @@ void main() {
     //p.pan_step=3.0;
     sound_global_hrtf=true;
     sm.push(menu);
-    sm.push(go);
+    //sm.push(go);
     while (true) {
         wait(5);
         sm.update();
@@ -51,6 +51,7 @@ class menu_state:state {
     }
 
     void on_pop() {
+        speak("Welcome");
     }
 }
 
@@ -67,17 +68,18 @@ class game_state:state {
         ambience.play_looped();
         walktime=150;
         spawn_time=random(3000,10000);
+        reset_game();
     }
 
     void on_pop() {
         ambience.stop();
-        reset_game();
+        p.destroy_all();
     }
 
     void on_update() {
         p.update_listener_2d(x,0);
         if (key_pressed(KEY_ESCAPE)) {
-            sm.pop();
+            sm.push(go);
         }
         bullet_loop();
         if (spawn_timer.elapsed>=spawn_time) {
@@ -119,8 +121,7 @@ class game_state:state {
             speak(lives+" Lives remaining");
         }
         if (lives==0) {
-            alert("Game over", "You managed to get A score of "+score);
-            sm.pop();
+            sm.push(go);
         }
         if (key_pressed(KEY_A)) {
             speak("Accuracy: "+calculate_accuracy(fired_shots,targets_hit)+" percent");
@@ -140,12 +141,16 @@ class game_state:state {
 }
 
 class game_over_state:state {
+    int list;
+    int ok;
     void on_push() {
         f.create_window();
-        int list=f.create_list("Results", 2,false,true);
-        f.add_list_item(0,"Score: 0");
-        f.add_list_item(0,"accuracy: 100%");
-        int ok=f.create_button("OK");
+        list=f.create_list("Results", 3,false,true);
+        f.add_list_item(0,"Score: "+score);
+        f.add_list_item(0,"accuracy: "+calculate_accuracy(fired_shots,targets_hit)+" Percent");
+        f.add_list_item(0, "Shots fired: "+fired_shots);
+        ok=f.create_button("OK");
+        f.focus(list);
     }
 
     void on_pop() {
@@ -154,8 +159,9 @@ class game_over_state:state {
 
     void on_update() {
         f.monitor();
-        if (key_pressed(KEY_ESCAPE)) {
+        if (key_pressed(KEY_ESCAPE) || f.is_pressed(ok)) {
             sm.pop();
+            sm.pop(); //We want to go to the main menu
         }
     }
 }
