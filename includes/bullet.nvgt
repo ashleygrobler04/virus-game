@@ -2,18 +2,17 @@
 #include "virus.nvgt"
 
 class bullet {
-    int x,y,speed;
-    timer movetimer;
+    int x,y;
+    float speed;
     bullet(int bullet_x, int bullet_y) {
         x=bullet_x;
         y=bullet_y;
-        speed=50;
+        speed=1.25;
     }
 
     void update() {
-        if (movetimer.elapsed>=speed and y<30) {
-            y++;
-            movetimer.restart();
+        if (y<30) {
+            y+=speed;
         }
     }
 }
