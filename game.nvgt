@@ -1,16 +1,13 @@
-
 #include "form.nvgt"#include "includes/state.nvgt"
 #include "includes/bullet.nvgt"
 #include "includes/virus.nvgt"
 #include "includes/globals.nvgt"
 #include "dynamic_menu.nvgt"
-
 menu_state menu;
 game_state game;
 game_over_state go;
 state_manager sm;
 audio_form f;
-
 void main() {
     show_window("Virus game");
     //p.pan_step=3.0;
@@ -67,10 +64,9 @@ class game_state:state {
         ambience.load("sounds/ambience.wav");
         ambience.play_looped();
         walktime=150;
-        spawn_time=random(3000,10000);
+        spawn_time=random(3000-score,10000-score);
         reset_game();
     }
-
     void on_pop() {
         ambience.stop();
         p.destroy_all();
@@ -84,7 +80,7 @@ class game_state:state {
         bullet_loop();
         if (spawn_timer.elapsed>=spawn_time) {
             spawn_virus();
-            spawn_time=random(3000,10000);
+            spawn_time=random(3000-score,10000-score);
             spawn_timer.restart();
         }
         for (int i=0; i<v.length(); i++) {
@@ -115,7 +111,7 @@ class game_state:state {
             fired_shots+=1;
         }
         if (key_pressed(KEY_S)) {
-            speak("Your score is "+score);
+            speak("score: "+score);
         }
         if (key_pressed(KEY_L)) {
             speak(lives+" Lives remaining");
@@ -127,7 +123,6 @@ class game_state:state {
             speak("Accuracy: "+calculate_accuracy(fired_shots,targets_hit)+" percent");
         }
     }
-
     void reset_game() {
         p.destroy_all();
         v.resize(0);
@@ -139,11 +134,11 @@ class game_state:state {
         targets_hit=0;
     }
 }
-
 class game_over_state:state {
     int list;
     int ok;
     void on_push() {
+        p.play_stationary("sounds/gameover.ogg",false);
         f.create_window();
         list=f.create_list("Results", 3,false,true);
         f.add_list_item(0,"Score: "+score);
@@ -152,11 +147,9 @@ class game_over_state:state {
         ok=f.create_button("OK");
         f.focus(list);
     }
-
     void on_pop() {
         f.reset();
     }
-
     void on_update() {
         f.monitor();
         if (key_pressed(KEY_ESCAPE) || f.is_pressed(ok)) {
